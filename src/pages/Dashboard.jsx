@@ -17,6 +17,11 @@ import {
 import { formatCurrency, getCurrentMonth, getDaysRemaining } from '../utils/formatters';
 import { v4 as uuidv4 } from 'uuid';
 import { Link } from 'react-router-dom';
+import { FinancialHealthScore } from '../components/FinancialHealthScore';
+import { AIInsightsPanel } from '../components/AIInsightsPanel';
+import { useInsights } from '../hooks/useInsights';
+import { useAnalytics } from '../hooks/useAnalytics';
+import { insightsAPI } from '../services/api';
 
 const stagger = {
   container: { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } },
@@ -25,38 +30,35 @@ const stagger = {
 
 export default function Dashboard() {
   const { state: authState } = useContext(AuthContext);
-  const { state } = useContext(AppContext);
+  const { state, dispatch } = useContext(AppContext);
   const [addOpen, setAddOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [goals, setGoals] = useState([]);
+  
+  const goals = state.savingsGoals || [];
   const [goalModal, setGoalModal] = useState(false);
   const [goalForm, setGoalForm] = useState({ title: '', targetAmount: '', savedAmount: '', deadline: '', color: '#00d4aa' });
   const [editGoal, setEditGoal] = useState(null);
+
+  const { insights, healthScore, loading: insightsLoading, refresh: refreshInsights } = useInsights();
+  const { overview, loading: analyticsLoading } = useAnalytics();
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 700);
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    const stored = localStorage.getItem('savings_goals');
-    if (stored) setGoals(JSON.parse(stored));
-  }, []);
-
-  const saveGoals = (newGoals) => {
-    setGoals(newGoals);
-    localStorage.setItem('savings_goals', JSON.stringify(newGoals));
-  };
-
   const currency = authState.user?.currency || 'INR';
   const month = getCurrentMonth();
   const { transactions } = state;
 
-  const totalBalance = getTotalBalance(transactions);
-  const monthlyIncome = getMonthlyIncome(transactions, month);
-  const monthlyExpenses = getMonthlyExpenses(transactions, month);
-  const savingsRate = getSavingsRate(monthlyIncome, monthlyExpenses);
+  const totalBalance = overview?.totalBalance ?? getTotalBalance(transactions);
+  const monthlyIncome = overview?.currentMonth?.income ?? getMonthlyIncome(transactions, month);
+  const monthlyExpenses = overview?.currentMonth?.expenses ?? getMonthlyExpenses(transactions, month);
+  const savingsRate = overview?.currentMonth?.savingsRate ?? getSavingsRate(monthlyIncome, monthlyExpenses);
   const recentTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 6);
+
+  const incomeTrendVal = overview?.trends?.income ?? 0;
+  const expenseTrendVal = overview?.trends?.expenses ?? 0;
 
   const summaryCards = [
     {
@@ -65,7 +67,7 @@ export default function Dashboard() {
       icon: Wallet,
       iconBg: 'rgba(0,212,170,0.12)',
       iconColor: 'var(--accent)',
-      trend: '+2.4%',
+      trend: 'Real-time',
       trendPositive: true,
     },
     {
@@ -74,8 +76,8 @@ export default function Dashboard() {
       icon: TrendingUp,
       iconBg: 'rgba(74,158,255,0.12)',
       iconColor: 'var(--blue)',
-      trend: '+8.1%',
-      trendPositive: true,
+      trend: incomeTrendVal !== 0 ? `${incomeTrendVal >= 0 ? '+' : ''}${incomeTrendVal.toFixed(1)}%` : 'Syncing',
+      trendPositive: incomeTrendVal >= 0,
     },
     {
       label: 'Monthly Expenses',
@@ -83,8 +85,8 @@ export default function Dashboard() {
       icon: TrendingDown,
       iconBg: 'rgba(255,71,87,0.12)',
       iconColor: 'var(--red)',
-      trend: '-3.2%',
-      trendPositive: false,
+      trend: expenseTrendVal !== 0 ? `${expenseTrendVal >= 0 ? '+' : ''}${expenseTrendVal.toFixed(1)}%` : 'Syncing',
+      trendPositive: expenseTrendVal <= 0,
     },
     {
       label: 'Savings Rate',
@@ -92,8 +94,8 @@ export default function Dashboard() {
       icon: PiggyBank,
       iconBg: 'rgba(155,89,182,0.12)',
       iconColor: 'var(--purple)',
-      trend: savingsRate > 20 ? 'On track' : 'Low',
-      trendPositive: savingsRate > 20,
+      trend: savingsRate >= 20 ? 'On track' : 'Optimize',
+      trendPositive: savingsRate >= 20,
     },
   ];
 
@@ -104,32 +106,58 @@ export default function Dashboard() {
     return 'Good evening';
   };
 
-  const handleGoalSubmit = (e) => {
+  const handleGoalSubmit = async (e) => {
     e.preventDefault();
     if (!goalForm.title || !goalForm.targetAmount || !goalForm.deadline) return;
-    if (editGoal) {
-      const updated = goals.map(g =>
-        g.id === editGoal.id
-          ? { ...editGoal, ...goalForm, targetAmount: Number(goalForm.targetAmount), savedAmount: Number(goalForm.savedAmount) }
-          : g
-      );
-      saveGoals(updated);
-      setEditGoal(null);
-    } else {
-      const newGoal = { id: uuidv4(), ...goalForm, targetAmount: Number(goalForm.targetAmount), savedAmount: Number(goalForm.savedAmount) || 0 };
-      saveGoals([...goals, newGoal]);
+    
+    try {
+      const payload = {
+        title: goalForm.title,
+        targetAmount: Number(goalForm.targetAmount),
+        savedAmount: Number(goalForm.savedAmount) || 0,
+        deadline: goalForm.deadline,
+        color: goalForm.color
+      };
+
+      if (editGoal) {
+        const goalId = editGoal.id || editGoal._id;
+        const { data } = await insightsAPI.updateGoal(goalId, payload);
+        dispatch({ type: 'EDIT_GOAL', payload: { ...data.data, id: data.data._id } });
+        dispatch({ type: 'ADD_TOAST', payload: { message: 'Goal updated successfully', type: 'success' } });
+        setEditGoal(null);
+      } else {
+        const { data } = await insightsAPI.createGoal(payload);
+        dispatch({ type: 'ADD_GOAL', payload: { ...data.data, id: data.data._id } });
+        dispatch({ type: 'ADD_TOAST', payload: { message: 'Goal created successfully', type: 'success' } });
+      }
+      setGoalForm({ title: '', targetAmount: '', savedAmount: '', deadline: '', color: '#00d4aa' });
+      setGoalModal(false);
+    } catch (err) {
+      dispatch({ type: 'ADD_TOAST', payload: { message: err.response?.data?.message || 'Action failed', type: 'error' } });
     }
-    setGoalForm({ title: '', targetAmount: '', savedAmount: '', deadline: '', color: '#00d4aa' });
-    setGoalModal(false);
   };
 
   const openEditGoal = (goal) => {
     setEditGoal(goal);
-    setGoalForm({ title: goal.title, targetAmount: String(goal.targetAmount), savedAmount: String(goal.savedAmount), deadline: goal.deadline, color: goal.color });
+    setGoalForm({
+      title: goal.title,
+      targetAmount: String(goal.targetAmount),
+      savedAmount: String(goal.savedAmount),
+      deadline: goal.deadline ? goal.deadline.split('T')[0] : '',
+      color: goal.color
+    });
     setGoalModal(true);
   };
 
-  const deleteGoal = (id) => saveGoals(goals.filter(g => g.id !== id));
+  const deleteGoal = async (id) => {
+    try {
+      await insightsAPI.deleteGoal(id);
+      dispatch({ type: 'DELETE_GOAL', payload: id });
+      dispatch({ type: 'ADD_TOAST', payload: { message: 'Goal deleted successfully', type: 'success' } });
+    } catch (err) {
+      dispatch({ type: 'ADD_TOAST', payload: { message: err.response?.data?.message || 'Failed to delete goal', type: 'error' } });
+    }
+  };
 
   return (
     <div style={{ padding: '20px 24px 80px', maxWidth: 1400, margin: '0 auto' }}>
@@ -177,6 +205,16 @@ export default function Dashboard() {
           ))
         }
       </motion.div>
+
+      {/* AI Insights & Financial Health Score Section */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 12, marginBottom: 20 }} className="grid-responsive-2">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <AIInsightsPanel insights={insights} loading={insightsLoading} onRefresh={refreshInsights} />
+        </motion.div>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
+          <FinancialHealthScore healthScore={healthScore} loading={insightsLoading} />
+        </motion.div>
+      </div>
 
       {/* Charts Row */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 12, marginBottom: 20 }} className="grid-responsive-2">

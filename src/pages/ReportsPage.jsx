@@ -12,16 +12,57 @@ import {
   getCategoryTotals, getDailySpending
 } from '../utils/calculations';
 import { Printer, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 export default function ReportsPage() {
-  const { state } = useContext(AppContext);
+  const { state, dispatch } = useContext(AppContext);
   const { state: authState } = useContext(AuthContext);
   const currency = authState.user?.currency || 'INR';
   const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [exporting, setExporting] = useState(false);
 
   const { transactions } = state;
+
+  const handleExportPDF = async () => {
+    const element = document.getElementById('report-print-area');
+    if (!element) return;
+    setExporting(true);
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2, // Double DPI for high resolution print
+        useCORS: true,
+        backgroundColor: '#0d0d0f',
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`wealthflow-report-${month}.pdf`);
+      dispatch({ type: 'ADD_TOAST', payload: { message: 'PDF report exported successfully!', type: 'success' } });
+    } catch (err) {
+      console.error('PDF export failed:', err);
+      dispatch({ type: 'ADD_TOAST', payload: { message: 'Failed to generate PDF.', type: 'error' } });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const income = getMonthlyIncome(transactions, month);
   const expenses = getMonthlyExpenses(transactions, month);
@@ -96,12 +137,17 @@ export default function ReportsPage() {
             style={{ width: 'auto' }}
           />
         </div>
-        <Button variant="secondary" size="sm" onClick={() => window.print()}>
-          <Printer size={12} /> Export PDF
-        </Button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Button variant="secondary" size="sm" onClick={() => window.print()}>
+            <Printer size={12} /> Print
+          </Button>
+          <Button size="sm" onClick={handleExportPDF} loading={exporting}>
+            Export PDF
+          </Button>
+        </div>
       </div>
 
-      <div className="print-content">
+      <div id="report-print-area" className="print-content" style={{ padding: '20px', background: 'var(--bg-primary)', borderRadius: '16px' }}>
         <h2 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16, letterSpacing: '-0.02em' }}>
           {formatMonth(month)} — Financial Report
         </h2>

@@ -1,8 +1,8 @@
 import { useState, useContext } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { Button } from '../ui/Button';
 import { AppContext } from '../../context/AppContext';
 import { CATEGORIES_LIST } from '../../utils/sampleData';
+import { useTransactions } from '../../hooks/useTransactions';
 
 const initialForm = {
   type: 'expense',
@@ -15,6 +15,7 @@ const initialForm = {
 
 export function TransactionForm({ onClose, editData = null }) {
   const { dispatch } = useContext(AppContext);
+  const { addTransaction, editTransaction } = useTransactions();
   const [form, setForm] = useState(editData
     ? { ...editData, date: editData.date.slice(0, 10), amount: String(editData.amount) }
     : initialForm
@@ -36,25 +37,22 @@ export function TransactionForm({ onClose, editData = null }) {
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setLoading(true);
-    await new Promise(r => setTimeout(r, 300));
 
-    const transaction = {
-      id: editData?.id || uuidv4(),
+    const payload = {
       type: form.type,
       amount: Number(form.amount),
       category: form.category,
       paymentMethod: form.paymentMethod,
-      note: form.note.trim(),
+      notes: form.note.trim(),
       date: new Date(form.date).toISOString(),
     };
 
     if (editData) {
-      dispatch({ type: 'EDIT_TRANSACTION', payload: transaction });
-      dispatch({ type: 'ADD_TOAST', payload: { message: 'Transaction updated!', type: 'success' } });
+      await editTransaction(editData._id || editData.id, payload);
     } else {
-      dispatch({ type: 'ADD_TRANSACTION', payload: transaction });
-      dispatch({ type: 'ADD_TOAST', payload: { message: 'Transaction added!', type: 'success' } });
+      await addTransaction(payload);
     }
+    
     setLoading(false);
     onClose();
   };

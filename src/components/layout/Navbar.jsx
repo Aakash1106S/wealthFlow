@@ -1,7 +1,10 @@
 import { useContext } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Bell, Search } from 'lucide-react';
+import { Search, Sun, Moon } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
+import { NotificationBell } from '../NotificationBell';
+import { useNotifications } from '../../hooks/useInsights';
+import { useTheme } from '../../hooks/useTheme';
 
 const pageTitles = {
   '/dashboard': 'Dashboard',
@@ -16,6 +19,9 @@ export function Navbar() {
   const { state } = useContext(AuthContext);
   const location = useLocation();
   const title = pageTitles[location.pathname] || 'WealthFlow';
+  
+  const { notifications, unreadCount, markRead, markAllRead, deleteNotif, clearAll } = useNotifications();
+  const { toggleTheme, isDark } = useTheme();
 
   return (
     <header className="no-print navbar">
@@ -28,9 +34,24 @@ export function Navbar() {
         <button className="navbar-action-btn" aria-label="Search">
           <Search size={14} />
         </button>
-        <button className="navbar-action-btn" aria-label="Notifications">
-          <Bell size={14} />
+        
+        <button 
+          className="navbar-action-btn" 
+          onClick={toggleTheme} 
+          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {isDark ? <Sun size={14} /> : <Moon size={14} />}
         </button>
+
+        <NotificationBell
+          notifications={notifications}
+          unreadCount={unreadCount}
+          onMarkRead={markRead}
+          onMarkAllRead={markAllRead}
+          onDelete={deleteNotif}
+          onClearAll={clearAll}
+        />
+
         <div
           className="sidebar-avatar"
           style={{ width: 30, height: 30, borderRadius: 8, fontSize: 12 }}
