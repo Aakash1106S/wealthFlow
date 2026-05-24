@@ -32,7 +32,7 @@ export default function RegisterPage() {
     setLoading(true);
     setApiError('');
     await new Promise(r => setTimeout(r, 600));
-    const result = register(form.name, form.email, form.password, form.currency);
+    const result = await register(form.name, form.email, form.password, form.currency);
     setLoading(false);
     if (result.success) navigate('/dashboard');
     else setApiError(result.error);

@@ -29,7 +29,7 @@ export default function LoginPage() {
     setLoading(true);
     setApiError('');
     await new Promise(r => setTimeout(r, 600));
-    const result = login(form.email, form.password, form.remember);
+    const result = await login(form.email, form.password, form.remember);
     setLoading(false);
     if (result.success) navigate('/dashboard');
     else setApiError(result.error);
@@ -43,6 +43,7 @@ export default function LoginPage() {
 
   const demoLogin = async () => {
     setLoading(true);
+    setApiError('');
     const registered = localStorage.getItem('registered_users');
     let users = [];
     try { users = JSON.parse(registered) || []; } catch {}
@@ -51,9 +52,10 @@ export default function LoginPage() {
       localStorage.setItem('registered_users', JSON.stringify(users));
     }
     await new Promise(r => setTimeout(r, 400));
-    const result = login('demo@wealthflow.app', 'Demo@123');
+    const result = await login('demo@wealthflow.app', 'Demo@123');
     setLoading(false);
     if (result.success) navigate('/dashboard');
+    else setApiError(result.error);
   };
 
   return (
@@ -150,17 +152,22 @@ export default function LoginPage() {
               {errors.password && <p style={{ fontSize: 10, color: 'var(--red)', marginTop: 4 }}>{errors.password}</p>}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <input
-                id="remember"
-                type="checkbox"
-                checked={form.remember}
-                onChange={set('remember')}
-                style={{ width: 13, height: 13, accentColor: 'var(--accent)', cursor: 'pointer' }}
-              />
-              <label htmlFor="remember" style={{ fontSize: 11, color: 'var(--text-muted)', cursor: 'pointer' }}>
-                Remember me
-              </label>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginTop: 2 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <input
+                  id="remember"
+                  type="checkbox"
+                  checked={form.remember}
+                  onChange={set('remember')}
+                  style={{ width: 13, height: 13, accentColor: 'var(--accent)', cursor: 'pointer' }}
+                />
+                <label htmlFor="remember" style={{ fontSize: 11, color: 'var(--text-muted)', cursor: 'pointer' }}>
+                  Remember me
+                </label>
+              </div>
+              <Link to="/forgot-password" style={{ fontSize: 11, color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>
+                Forgot password?
+              </Link>
             </div>
 
             <Button type="submit" size="lg" className="w-full" loading={loading} style={{ marginTop: 4 }}>

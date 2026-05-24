@@ -11,6 +11,7 @@ import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { Card } from '../components/ui/Card';
 import { CATEGORIES_LIST } from '../utils/sampleData';
 import { formatCurrency, formatDate } from '../utils/formatters';
+import { useTransactions } from '../hooks/useTransactions';
 
 const defaultFilters = {
   search: '', type: '', category: '', paymentMethod: '',
@@ -120,6 +121,7 @@ function CalendarView({ transactions, currency }) {
 export default function TransactionsPage() {
   const { state, dispatch } = useContext(AppContext);
   const { state: authState } = useContext(AuthContext);
+  const { deleteTransaction } = useTransactions();
   const [filters, setFilters] = useState(defaultFilters);
   const [addOpen, setAddOpen] = useState(false);
   const [editData, setEditData] = useState(null);
@@ -147,10 +149,9 @@ export default function TransactionsPage() {
     return txns;
   }, [state.transactions, filters]);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteTarget) return;
-    dispatch({ type: 'DELETE_TRANSACTION', payload: deleteTarget.id });
-    dispatch({ type: 'ADD_TOAST', payload: { message: 'Transaction deleted.', type: 'info' } });
+    await deleteTransaction(deleteTarget.id || deleteTarget._id);
     setDeleteTarget(null);
   };
 

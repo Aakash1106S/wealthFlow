@@ -9,6 +9,8 @@ import { ToastContainer } from './components/ui/Toast';
 import { OnboardingFlow } from './components/OnboardingFlow';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import Dashboard from './pages/Dashboard';
 import TransactionsPage from './pages/TransactionsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
@@ -25,6 +27,19 @@ const pageVariants = {
 
 function ProtectedRoute({ children }) {
   const { state } = useContext(AuthContext);
+  if (state.loading) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+          <svg className="animate-spin" style={{ width: 32, height: 32, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none">
+            <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.12em' }}>VERIFYING SESSION...</span>
+        </div>
+      </div>
+    );
+  }
   if (!state.isAuthenticated) return <Navigate to="/login" replace />;
   return children;
 }
@@ -68,7 +83,7 @@ export default function App() {
     return !!localStorage.getItem('onboarded');
   });
 
-  const isAuthPage = ['/login', '/register'].includes(location.pathname);
+  const isAuthPage = ['/login', '/register', '/forgot-password'].includes(location.pathname) || location.pathname.startsWith('/reset-password');
   const showOnboarding = authState.isAuthenticated && !onboarded && !isAuthPage;
 
   const handleOnboardingFinish = () => {
@@ -82,6 +97,8 @@ export default function App() {
       <Routes location={location} key={location.pathname}>
         <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
         <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
+        <Route path="/forgot-password" element={<PageTransition><ForgotPasswordPage /></PageTransition>} />
+        <Route path="/reset-password/:token" element={<PageTransition><ResetPasswordPage /></PageTransition>} />
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <AppLayout>

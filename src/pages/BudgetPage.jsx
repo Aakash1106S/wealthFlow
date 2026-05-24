@@ -10,7 +10,7 @@ import { Input, Select } from '../components/ui/Input';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { getCurrentMonth } from '../utils/formatters';
 import { CATEGORIES_LIST } from '../utils/sampleData';
-import { v4 as uuidv4 } from 'uuid';
+import { useBudget } from '../hooks/useBudget';
 
 const EXPENSE_CATS = CATEGORIES_LIST.filter(c => !['Salary', 'Freelance', 'Business'].includes(c));
 
@@ -27,6 +27,8 @@ export default function BudgetPage() {
   const currentMonth = getCurrentMonth();
   const budgets = state.budgets.filter(b => b.month === currentMonth);
 
+  const { addBudget, editBudget, deleteBudget } = useBudget();
+
   useEffect(() => {
     budgets.forEach(b => {
       const pct = b.limit > 0 ? (b.spent / b.limit) * 100 : 0;
@@ -39,25 +41,27 @@ export default function BudgetPage() {
     });
   }, []); // eslint-disable-line
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = {};
     if (!form.limit || isNaN(Number(form.limit)) || Number(form.limit) <= 0)
       errs.limit = 'Enter a valid amount';
     if (Object.keys(errs).length) { setErrors(errs); return; }
 
+    const payload = {
+      category: form.category,
+      limit: Number(form.limit),
+      month: form.month,
+    };
+
     if (editData) {
-      dispatch({ type: 'EDIT_BUDGET', payload: { ...editData, limit: Number(form.limit), category: form.category, month: form.month } });
-      dispatch({ type: 'ADD_TOAST', payload: { message: 'Budget updated!', type: 'success' } });
+      await editBudget(editData._id || editData.id, payload);
     } else {
       const existing = state.budgets.find(b => b.category === form.category && b.month === form.month);
       if (existing) {
-        dispatch({ type: 'EDIT_BUDGET', payload: { ...existing, limit: Number(form.limit) } });
-        dispatch({ type: 'ADD_TOAST', payload: { message: 'Budget updated!', type: 'success' } });
+        await editBudget(existing._id || existing.id, { ...existing, limit: Number(form.limit) });
       } else {
-        const newBudget = { id: uuidv4(), category: form.category, limit: Number(form.limit), spent: 0, month: form.month };
-        dispatch({ type: 'ADD_BUDGET', payload: newBudget });
-        dispatch({ type: 'ADD_TOAST', payload: { message: 'Budget set!', type: 'success' } });
+        await addBudget(payload);
       }
     }
 
@@ -73,10 +77,9 @@ export default function BudgetPage() {
     setAddOpen(true);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteTarget) return;
-    dispatch({ type: 'DELETE_BUDGET', payload: deleteTarget });
-    dispatch({ type: 'ADD_TOAST', payload: { message: 'Budget removed.', type: 'info' } });
+    await deleteBudget(deleteTarget._id || deleteTarget.id || deleteTarget);
     setDeleteTarget(null);
   };
 
