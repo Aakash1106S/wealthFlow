@@ -160,18 +160,18 @@ export default function Dashboard() {
   };
 
   return (
-    <div style={{ padding: '20px 24px 80px', maxWidth: 1400, margin: '0 auto' }}>
+    <div className="px-4 py-5 md:px-6 lg:px-8 pb-24 md:pb-8 max-w-[1400px] mx-auto w-full">
 
       {/* Greeting */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
-        style={{ marginBottom: 20 }}
+        className="mb-5"
       >
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>
+        <p className="text-xs text-[var(--text-muted)] mb-1">
           {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+        <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-[var(--text-primary)] tracking-tight">
           {greetingTime()}, {authState.user?.name?.split(' ')[0] || 'there'} 👋
         </h2>
       </motion.div>
@@ -181,8 +181,7 @@ export default function Dashboard() {
         variants={stagger.container}
         initial="hidden"
         animate="visible"
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}
-        className="grid-responsive-4"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5"
       >
         {loading
           ? Array(4).fill(0).map((_, i) => <SkeletonCard key={i} />)
@@ -195,10 +194,10 @@ export default function Dashboard() {
                     <Icon size={14} style={{ color: iconColor }} />
                   </div>
                 </div>
-                <div className="stat-card-value">{value}</div>
-                <div className={`stat-card-sub ${trendPositive ? 'positive' : 'negative'}`}>
-                  {trendPositive ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-                  {trend} this month
+                <div className="stat-card-value text-xl sm:text-2xl">{value}</div>
+                <div className={`stat-card-sub ${trendPositive ? 'positive' : 'negative'} flex items-center gap-1 mt-1`}>
+                  {trendPositive ? <ArrowUpRight size={12} className="shrink-0" /> : <ArrowDownRight size={12} className="shrink-0" />}
+                  <span className="whitespace-nowrap">{trend} this month</span>
                 </div>
               </div>
             </motion.div>
@@ -207,7 +206,7 @@ export default function Dashboard() {
       </motion.div>
 
       {/* AI Insights & Financial Health Score Section */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 12, marginBottom: 20 }} className="grid-responsive-2">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-4 mb-5">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <AIInsightsPanel insights={insights} loading={insightsLoading} onRefresh={refreshInsights} />
         </motion.div>
@@ -217,14 +216,14 @@ export default function Dashboard() {
       </div>
 
       {/* Charts Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 12, marginBottom: 20 }} className="grid-responsive-2">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-4 mb-5">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <Card>
             <div className="section-header">
               <span className="section-title">Spending by Category</span>
               <Link to="/analytics" className="section-action">View all <ChevronRight size={12} /></Link>
             </div>
-            <div style={{ minHeight: 280 }}>
+            <div className="relative h-[280px] sm:h-[320px] w-full">
               <SpendingPieChart transactions={transactions.filter(t => t.date.startsWith(month))} />
             </div>
           </Card>
@@ -234,7 +233,7 @@ export default function Dashboard() {
             <div className="section-header">
               <span className="section-title">Weekly Bar Flow</span>
             </div>
-            <div style={{ minHeight: 280 }}>
+            <div className="relative h-[280px] sm:h-[320px] w-full">
               <IncomeExpenseBarChart transactions={transactions} weekly />
             </div>
           </Card>
@@ -242,18 +241,18 @@ export default function Dashboard() {
       </div>
 
       {/* Transactions + Goals */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 12 }} className="grid-responsive-2">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
         {/* Recent Transactions */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <Card style={{ height: '100%' }}>
+          <Card className="h-full">
             <div className="section-header">
               <span className="section-title">Recent Transactions</span>
               <Link to="/transactions" className="section-action">View all <ChevronRight size={12} /></Link>
             </div>
-            <div>
+            <div className="flex flex-col gap-1">
               {recentTransactions.length === 0
                 ? (
-                  <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-muted)', fontSize: 12 }}>
+                  <div className="text-center py-8 text-[var(--text-muted)] text-xs">
                     No transactions yet. Add your first!
                   </div>
                 )
@@ -267,10 +266,10 @@ export default function Dashboard() {
 
         {/* Savings Goals */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card style={{ height: '100%' }}>
+          <Card className="h-full">
             <div className="section-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Target size={14} style={{ color: 'var(--accent)' }} />
+              <div className="flex items-center gap-1.5">
+                <Target size={14} className="text-[var(--accent)]" />
                 <span className="section-title">Savings Goals</span>
               </div>
               <Button
@@ -287,11 +286,11 @@ export default function Dashboard() {
             </div>
 
             {goals.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-muted)', fontSize: 12 }}>
+              <div className="text-center py-8 text-[var(--text-muted)] text-xs">
                 No savings goals yet. Set one to stay motivated!
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div className="flex flex-col gap-3">
                 {goals.map(goal => {
                   const pct = Math.min((goal.savedAmount / goal.targetAmount) * 100, 100);
                   const daysLeft = getDaysRemaining(goal.deadline);
@@ -299,36 +298,34 @@ export default function Dashboard() {
                   return (
                     <div
                       key={goal.id}
+                      className="bg-[rgba(255,255,255,0.02)] border rounded-xl p-3"
                       style={{
-                        background: 'rgba(255,255,255,0.02)',
-                        border: `1px solid ${isUrgent ? 'rgba(255,71,87,0.2)' : 'var(--border)'}`,
-                        borderRadius: 10,
-                        padding: '12px 14px',
+                        borderColor: isUrgent ? 'rgba(255,71,87,0.2)' : 'var(--border)',
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <div className="flex items-start justify-between mb-2">
                         <div>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{goal.title}</div>
-                          <div style={{ fontSize: 10, color: isUrgent ? 'var(--red)' : 'var(--text-muted)', marginTop: 2 }}>
+                          <div className="text-xs font-semibold text-[var(--text-primary)]">{goal.title}</div>
+                          <div className="text-[10px] mt-0.5 font-medium" style={{ color: isUrgent ? 'var(--red)' : 'var(--text-muted)' }}>
                             {daysLeft > 0 ? `${daysLeft}d left` : daysLeft === 0 ? 'Due today!' : 'Overdue'}
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: 3 }}>
+                        <div className="flex gap-1.5">
                           <button
                             onClick={() => openEditGoal(goal)}
-                            style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            className="w-7 h-7 rounded-lg bg-[rgba(255,255,255,0.04)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer text-xs flex items-center justify-center transition-all"
                           >
                             ✏
                           </button>
                           <button
                             onClick={() => deleteGoal(goal.id)}
-                            style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(255,71,87,0.06)', border: '1px solid rgba(255,71,87,0.15)', color: 'var(--red)', cursor: 'pointer', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            className="w-7 h-7 rounded-lg bg-[rgba(255,71,87,0.06)] border border-[rgba(255,71,87,0.15)] text-[var(--red)] hover:bg-[rgba(255,71,87,0.12)] cursor-pointer text-xs flex items-center justify-center transition-all"
                           >
                             ✕
                           </button>
                         </div>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-muted)', marginBottom: 6 }}>
+                      <div className="flex justify-between text-[10px] text-[var(--text-muted)] mb-1.5">
                         <span>{formatCurrency(goal.savedAmount, currency)}</span>
                         <span>{formatCurrency(goal.targetAmount, currency)}</span>
                       </div>
@@ -338,7 +335,7 @@ export default function Dashboard() {
                           style={{ width: `${pct}%`, background: isUrgent ? 'var(--red)' : goal.color }}
                         />
                       </div>
-                      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{pct.toFixed(0)}% saved</div>
+                      <div className="text-[10px] text-[var(--text-muted)] mt-1">{pct.toFixed(0)}% saved</div>
                     </div>
                   );
                 })}
@@ -353,10 +350,8 @@ export default function Dashboard() {
         onClick={() => setAddOpen(true)}
         style={{
           position: 'fixed',
-          bottom: 76,
-          right: 20,
-          width: 44,
-          height: 44,
+          width: 48,
+          height: 48,
           borderRadius: '50%',
           background: 'var(--accent)',
           border: 'none',
@@ -368,11 +363,11 @@ export default function Dashboard() {
           boxShadow: '0 4px 20px rgba(0,212,170,0.35)',
           zIndex: 30,
         }}
-        className="md:bottom-6 md:right-6"
+        className="bottom-20 right-5 md:bottom-6 md:right-6"
         whileHover={{ scale: 1.06 }}
         whileTap={{ scale: 0.94 }}
       >
-        <Plus size={20} />
+        <Plus size={22} />
       </motion.button>
 
       <Modal isOpen={addOpen} onClose={() => setAddOpen(false)} title="Add Transaction">
@@ -384,7 +379,7 @@ export default function Dashboard() {
         onClose={() => { setGoalModal(false); setEditGoal(null); }}
         title={editGoal ? 'Edit Goal' : 'Add Savings Goal'}
       >
-        <form onSubmit={handleGoalSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <form onSubmit={handleGoalSubmit} className="flex flex-col gap-4">
           <div>
             <label className="wf-label">Goal Title</label>
             <input
@@ -395,7 +390,7 @@ export default function Dashboard() {
               required
             />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="wf-label">Target Amount</label>
               <input
@@ -433,16 +428,16 @@ export default function Dashboard() {
             <label className="wf-label">Color</label>
             <input
               type="color"
-              style={{ height: 36, width: '100%', borderRadius: 8, border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', cursor: 'pointer', padding: 2 }}
+              style={{ height: 40, width: '100%', borderRadius: 8, border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', cursor: 'pointer', padding: 2 }}
               value={goalForm.color}
               onChange={e => setGoalForm(f => ({ ...f, color: e.target.value }))}
             />
           </div>
-          <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-            <Button variant="secondary" style={{ flex: 1 }} type="button" onClick={() => { setGoalModal(false); setEditGoal(null); }}>
+          <div className="flex gap-3 mt-2">
+            <Button variant="secondary" className="flex-1 min-h-[40px] text-xs font-medium" type="button" onClick={() => { setGoalModal(false); setEditGoal(null); }}>
               Cancel
             </Button>
-            <Button style={{ flex: 1 }} type="submit">
+            <Button className="flex-1 min-h-[40px] text-xs font-medium" type="submit">
               {editGoal ? 'Update' : 'Add Goal'}
             </Button>
           </div>

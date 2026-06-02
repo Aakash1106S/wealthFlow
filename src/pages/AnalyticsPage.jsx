@@ -81,16 +81,16 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div style={{ padding: '20px 24px 80px', maxWidth: 1400, margin: '0 auto' }}>
+    <div className="px-4 py-5 md:px-6 lg:px-8 pb-24 md:pb-8 max-w-[1400px] mx-auto w-full">
       
       {/* Title Header with Refresh */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
         <div>
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>Advanced Financial Analytics</h2>
-          <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>Deep insight indicators powered by your transaction historical patterns.</p>
+          <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-[var(--text-primary)] tracking-tight">Advanced Financial Analytics</h2>
+          <p className="text-xs text-[var(--text-muted)]">Deep insight indicators powered by your transaction historical patterns.</p>
         </div>
-        <Button size="sm" variant="ghost" onClick={handleRefreshAll} disabled={analyticsLoading || insightsLoading}>
-          <RefreshCw size={12} className={analyticsLoading || insightsLoading ? 'animate-spin' : ''} /> Sync Analytics
+        <Button size="sm" variant="ghost" className="min-h-[32px] text-xs w-full sm:w-auto" onClick={handleRefreshAll} disabled={analyticsLoading || insightsLoading}>
+          <RefreshCw size={12} className={analyticsLoading || insightsLoading ? 'animate-spin shrink-0' : 'shrink-0'} /> Sync Analytics
         </Button>
       </div>
 
@@ -99,46 +99,45 @@ export default function AnalyticsPage() {
         variants={stagger.container}
         initial="hidden"
         animate="visible"
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}
-        className="grid-responsive-4"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5"
       >
         {summaryCards.map(({ label, value, sub, icon: Icon, color, bg }, i) => (
           <motion.div key={i} variants={stagger.item}>
-            <div className="stat-card" style={{ height: '100%' }}>
+            <div className="stat-card h-full">
               <div className="stat-card-header">
                 <span className="stat-card-label">{label}</span>
-                <div className={`stat-card-icon ${bg}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 7 }}>
+                <div className={`stat-card-icon ${bg} flex items-center justify-center w-7 h-7 rounded-lg shrink-0`}>
                   <Icon size={14} className={color} />
                 </div>
               </div>
-              <div className="stat-card-value truncate" style={{ fontSize: 20, margin: '8px 0 2px' }}>{value}</div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)' }} className="truncate">{sub}</div>
+              <div className="stat-card-value text-lg sm:text-xl truncate my-2">{value}</div>
+              <div className="text-[10px] text-[var(--text-muted)] truncate">{sub}</div>
             </div>
           </motion.div>
         ))}
       </motion.div>
 
       {/* Monthly Bar Chart — full width */}
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ marginBottom: 20 }}>
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-5">
         <Card hover={false}>
           <div className="section-header">
             <span className="section-title">Monthly Income vs Expenses Trend</span>
           </div>
-          <div style={{ height: 260 }}>
+          <div className="relative h-[260px] sm:h-[300px] w-full">
             <IncomeExpenseBarChart transactions={transactions} />
           </div>
         </Card>
       </motion.div>
 
       {/* Grid of Custom Deep Analytics Charts */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }} className="grid-responsive-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
         {/* Cumulative Savings Chart */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <Card hover={false}>
             <div className="section-header">
               <span className="section-title">Cumulative Wealth Growth</span>
             </div>
-            <div style={{ height: 250 }}>
+            <div className="relative h-[250px] sm:h-[280px] w-full">
               <SavingsLineChart monthlyData={monthly} />
             </div>
           </Card>
@@ -150,7 +149,7 @@ export default function AnalyticsPage() {
             <div className="section-header">
               <span className="section-title">Budget Allocation vs Utilization</span>
             </div>
-            <div style={{ height: 250 }}>
+            <div className="relative h-[250px] sm:h-[280px] w-full">
               <BudgetRadarChart budgets={state.budgets.filter(b => b.month === month)} />
             </div>
           </Card>
@@ -158,31 +157,31 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Two-Column: Heatmap & Recurring section */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 12 }} className="grid-responsive-2">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-4">
         {/* Daily Spending Heatmap */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <Card hover={false} style={{ height: '100%', padding: '16px' }}>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="w-full overflow-hidden">
+          <Card hover={false} className="h-full p-4 overflow-x-auto">
             <ExpenseHeatmap currency={currency} />
           </Card>
         </motion.div>
 
         {/* Recurring Expense Detection Section */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card hover={false} style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <div className="section-header" style={{ marginBottom: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Layers size={14} style={{ color: 'var(--accent)' }} />
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="w-full">
+          <Card hover={false} className="h-full flex flex-col">
+            <div className="section-header mb-3">
+              <div className="flex items-center gap-1.5">
+                <Layers size={14} className="text-[var(--accent)] shrink-0" />
                 <span className="section-title">AI Recurring Bill Detection</span>
               </div>
-              <span style={{ fontSize: 10, background: 'rgba(0,212,170,0.12)', color: 'var(--accent)', padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>
+              <span className="text-[10px] bg-[rgba(0,212,170,0.12)] text-[var(--accent)] px-2 py-0.5 rounded-full font-semibold shrink-0">
                 Total: {formatCurrency(recurring?.monthlyTotal || 0, currency)}/mo
               </span>
             </div>
 
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 300, overflowY: 'auto' }}>
+            <div className="flex-1 flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
               {(!recurring?.autoDetected || recurring.autoDetected.length === 0) ? (
-                <div style={{ textAlign: 'center', padding: '40px 16px', color: 'var(--text-muted)', fontSize: 12, margin: 'auto' }}>
-                  <div style={{ fontSize: 24, marginBottom: 8 }}>🔄</div>
+                <div className="text-center py-10 px-4 text-[var(--text-muted)] text-xs m-auto">
+                  <div className="text-2xl mb-2">🔄</div>
                   No recurring items detected yet. The AI scans for repeating monthly/weekly amounts automatically.
                 </div>
               ) : (
@@ -191,38 +190,26 @@ export default function AnalyticsPage() {
                   return (
                     <div
                       key={idx}
-                      style={{
-                        padding: '10px 12px',
-                        borderRadius: 10,
-                        background: 'rgba(255,255,255,0.02)',
-                        border: '1px solid var(--border)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between'
-                      }}
+                      className="p-3 rounded-xl bg-[rgba(255,255,255,0.02)] border border-[var(--border)] flex items-center justify-between gap-3"
                     >
-                      <div>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{item.title}</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                          <span style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{item.category}</span>
-                          <span style={{ fontSize: 8, color: 'var(--text-muted)' }}>•</span>
-                          <span style={{ fontSize: 9, color: 'var(--accent)', textTransform: 'capitalize', fontWeight: 500 }}>{item.frequency}</span>
+                      <div className="min-w-0">
+                        <div className="text-xs font-semibold text-[var(--text-primary)] truncate">{item.title}</div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[9px] text-[var(--text-muted)] uppercase truncate">{item.category}</span>
+                          <span className="text-[8px] text-[var(--text-muted)]">•</span>
+                          <span className="text-[9px] text-[var(--accent)] uppercase font-medium shrink-0">{item.frequency}</span>
                         </div>
                       </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>
+                      <div className="text-right shrink-0">
+                        <div className="text-xs font-bold text-[var(--text-primary)]">
                           {formatCurrency(item.amount, currency)}
                         </div>
-                        <span style={{
-                          fontSize: 8,
-                          fontWeight: 700,
-                          padding: '1px 5px',
-                          borderRadius: 4,
-                          background: isHighConf ? 'rgba(0,212,170,0.1)' : 'rgba(255,193,7,0.1)',
-                          color: isHighConf ? 'var(--accent)' : 'var(--yellow)',
-                          marginTop: 3,
-                          display: 'inline-block'
-                        }}>
+                        <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded mt-1 inline-block shrink-0`}
+                          style={{
+                            background: isHighConf ? 'rgba(0,212,170,0.1)' : 'rgba(255,193,7,0.1)',
+                            color: isHighConf ? 'var(--accent)' : 'var(--yellow)',
+                          }}
+                        >
                           {item.confidenceScore}% Confidence
                         </span>
                       </div>

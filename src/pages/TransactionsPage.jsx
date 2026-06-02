@@ -53,29 +53,29 @@ function CalendarView({ transactions, currency }) {
   return (
     <div>
       {/* Month nav */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+      <div className="flex items-center justify-between mb-4">
         <button
           onClick={() => setCalMonth(new Date(year, month - 1, 1))}
-          style={{ width: 28, height: 28, borderRadius: 7, border: '1px solid var(--border)', background: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}
+          className="w-7 h-7 rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer flex items-center justify-center text-xs transition-all"
         >←</button>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+        <span className="text-xs md:text-sm font-semibold text-[var(--text-primary)]">
           {calMonth.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
         </span>
         <button
           onClick={() => setCalMonth(new Date(year, month + 1, 1))}
-          style={{ width: 28, height: 28, borderRadius: 7, border: '1px solid var(--border)', background: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}
+          className="w-7 h-7 rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer flex items-center justify-center text-xs transition-all"
         >→</button>
       </div>
 
       {/* Day headers */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginBottom: 6 }}>
+      <div className="grid grid-cols-7 gap-1 mb-2">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-          <div key={d} style={{ textAlign: 'center', fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', padding: '4px 0' }}>{d}</div>
+          <div key={d} className="text-center text-[9px] font-semibold uppercase tracking-wider text-[var(--text-muted)] py-1">{d}</div>
         ))}
       </div>
 
       {/* Calendar grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+      <div className="grid grid-cols-7 gap-1">
         {Array(firstDay).fill(null).map((_, i) => <div key={`e-${i}`} />)}
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
           const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -85,18 +85,17 @@ function CalendarView({ transactions, currency }) {
             <button
               key={day}
               onClick={() => openDay(day)}
+              className="min-h-[48px] sm:min-h-[56px] p-1.5 rounded-lg text-left border flex flex-col justify-between cursor-pointer transition-all hover:bg-[rgba(255,255,255,0.02)]"
               style={{
-                minHeight: 52, padding: 6, borderRadius: 8, textAlign: 'left',
-                border: `1px solid ${isToday ? 'var(--accent)' : 'var(--border)'}`,
+                borderColor: isToday ? 'var(--accent)' : 'var(--border)',
                 background: isToday ? 'rgba(0,212,170,0.05)' : 'transparent',
-                cursor: 'pointer', transition: 'all 0.12s',
               }}
             >
-              <span style={{ fontSize: 10, fontWeight: 600, color: isToday ? 'var(--accent)' : 'var(--text-muted)' }}>{day}</span>
+              <span className="text-[9px] sm:text-xs font-semibold" style={{ color: isToday ? 'var(--accent)' : 'var(--text-muted)' }}>{day}</span>
               {spend > 0 && (
-                <div style={{ marginTop: 3 }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--red)', marginBottom: 2 }} />
-                  <span style={{ fontSize: 9, color: 'var(--red)', lineHeight: 1 }}>{(spend / 1000).toFixed(1)}k</span>
+                <div className="mt-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--red)] mb-0.5" />
+                  <span className="text-[8px] sm:text-[9px] text-[var(--red)] font-medium leading-none">{(spend / 1000).toFixed(0)}k</span>
                 </div>
               )}
             </button>
@@ -105,9 +104,9 @@ function CalendarView({ transactions, currency }) {
       </div>
 
       <Modal isOpen={viewModal} onClose={() => setViewModal(false)} title={selectedDate ? formatDate(selectedDate.dateStr) : ''}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="flex flex-col gap-2">
           {selectedDate?.txns?.length === 0
-            ? <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', padding: '16px 0' }}>No transactions on this day</p>
+            ? <p className="text-xs text-[var(--text-muted)] text-center py-4">No transactions on this day</p>
             : selectedDate?.txns?.map(t => (
               <TransactionCard key={t.id} transaction={t} currency={currency} />
             ))
@@ -175,14 +174,14 @@ export default function TransactionsPage() {
   const set = (field) => (e) => setFilters(f => ({ ...f, [field]: e.target.value }));
 
   return (
-    <div style={{ padding: '20px 24px 80px', maxWidth: 1200, margin: '0 auto' }}>
+    <div className="px-4 py-5 md:px-6 lg:px-8 pb-24 md:pb-8 max-w-[1200px] mx-auto w-full">
 
       {/* Page Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 12 }}>
-        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <span className="text-xs text-[var(--text-muted)] order-2 sm:order-1">
           {filtered.length} transaction{filtered.length !== 1 ? 's' : ''}
         </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end order-1 sm:order-2">
           <div className="view-toggle">
             <button
               onClick={() => setViewMode('list')}
@@ -199,10 +198,10 @@ export default function TransactionsPage() {
               <Calendar size={13} />
             </button>
           </div>
-          <Button variant="secondary" size="sm" onClick={exportCSV}>
+          <Button variant="secondary" size="sm" className="min-h-[32px] text-xs" onClick={exportCSV}>
             <Download size={12} /> Export
           </Button>
-          <Button size="sm" onClick={() => { setEditData(null); setAddOpen(true); }}>
+          <Button size="sm" className="min-h-[32px] text-xs" onClick={() => { setEditData(null); setAddOpen(true); }}>
             <Plus size={12} /> Add
           </Button>
         </div>
@@ -211,17 +210,16 @@ export default function TransactionsPage() {
       {viewMode === 'list' ? (
         <>
           {/* Filters */}
-          <Card style={{ marginBottom: 16, padding: '14px 16px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 }}>
+          <Card className="mb-4 p-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
               {/* Search */}
-              <div style={{ position: 'relative', gridColumn: 'span 2' }}>
-                <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <div className="relative sm:col-span-2">
+                <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
                 <input
-                  className="wf-input"
+                  className="wf-input pl-8"
                   placeholder="Search transactions..."
                   value={filters.search}
                   onChange={set('search')}
-                  style={{ paddingLeft: 30 }}
                 />
               </div>
 
@@ -243,8 +241,8 @@ export default function TransactionsPage() {
                 <option value="upi">UPI</option>
               </select>
 
-              <input type="date" className="wf-input" value={filters.dateFrom} onChange={set('dateFrom')} />
-              <input type="date" className="wf-input" value={filters.dateTo} onChange={set('dateTo')} />
+              <input type="date" className="wf-input text-xs" value={filters.dateFrom} onChange={set('dateFrom')} />
+              <input type="date" className="wf-input text-xs" value={filters.dateTo} onChange={set('dateTo')} />
 
               <select className="wf-input" value={filters.sortBy} onChange={set('sortBy')}>
                 <option value="latest">Latest First</option>
@@ -255,24 +253,20 @@ export default function TransactionsPage() {
 
               <button
                 onClick={() => setFilters(defaultFilters)}
-                style={{
-                  height: 34, borderRadius: 8, border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)',
-                  color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  fontSize: 11, fontFamily: 'inherit',
-                }}
+                className="h-8.5 rounded-lg border border-[var(--border)] bg-[rgba(255,255,255,0.04)] text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer flex items-center justify-center gap-1.5 text-xs font-medium transition-all"
               >
-                <X size={11} /> Reset
+                <X size={12} /> Reset
               </button>
             </div>
           </Card>
 
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="flex flex-col">
             {filtered.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)', fontSize: 13 }}>
+              <div className="text-center py-12 text-[var(--text-muted)] text-xs">
                 No transactions match your filters
               </div>
             ) : (
-              <Card style={{ padding: '8px 0' }}>
+              <Card className="py-2 px-1">
                 {filtered.map((t, i) => (
                   <TransactionCard
                     key={t.id}
@@ -288,7 +282,7 @@ export default function TransactionsPage() {
           </div>
         </>
       ) : (
-        <Card>
+        <Card className="p-4">
           <CalendarView transactions={state.transactions} currency={currency} />
         </Card>
       )}

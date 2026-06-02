@@ -25,12 +25,27 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:3000',
+];
+
 app.use(cors({
-  origin: [
-    process.env.CLIENT_URL || 'http://localhost:5173',
-    'http://localhost:5174',
-    'http://localhost:3000',
-  ],
+  origin: (origin, callback) => {
+    // Allow non-browser requests (e.g. Server-to-server or tools)
+    if (!origin) return callback(null, true);
+    
+    const isLocal = allowedOrigins.includes(origin);
+    const isVercel = origin.endsWith('.vercel.app');
+    const isClientUrl = process.env.CLIENT_URL && origin === process.env.CLIENT_URL;
+    
+    if (isLocal || isVercel || isClientUrl) {
+      callback(null, true);
+    } else {
+      callback(new Error('Blocked by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],

@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthContext } from './context/AuthContext';
@@ -63,13 +63,21 @@ function PageTransition({ children }) {
 }
 
 function AppLayout({ children }) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  // Auto-close sidebar on path change (navigation)
+  useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [location.pathname]);
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', position: 'relative' }}>
       <div className="app-background" />
-      <Sidebar />
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       <div className="app-main-content">
-        <Navbar />
-        <main>{children}</main>
+        <Navbar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <main className="p-4 md:p-6 lg:p-8 pb-24 md:pb-6">{children}</main>
       </div>
       <MobileNav />
     </div>
