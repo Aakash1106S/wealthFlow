@@ -11,7 +11,7 @@ const navItems = [
 
 export function MobileNav() {
   return (
-    <nav className="no-print mobile-nav md:hidden">
+    <nav className="no-print mobile-nav flex md:hidden">
       {navItems.map(({ to, icon: Icon, label }) => (
         <NavLink
           key={to}
